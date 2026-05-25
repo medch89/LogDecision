@@ -1,0 +1,95 @@
+# ============================================================================
+# .gitignore — Swift / Xcode / iOS project
+# ============================================================================
+
+# ---- Xcode ------------------------------------------------------------------
+# Build artifacts
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+
+# User-specific Xcode files (keep shared schemes / project files in repo)
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# Xcode workspace user state
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# ---- macOS ------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# ---- Swift / SPM ------------------------------------------------------------
+.build/
+.swiftpm/
+Packages/
+Package.resolved
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+
+# ---- iOS Simulator / device logs -------------------------------------------
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.hmap
+*.app
+*.mobileprovision
+*.mobileprovision.plist
+*.p12
+
+# ---- Code coverage / test artifacts ----------------------------------------
+*.xcresult
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+TestResults/
+
+# ---- Secrets / local config -------------------------------------------------
+*.env
+.env.local
+.env.*.local
+*.local.xcconfig
+Secrets.swift
+GoogleService-Info.plist
+
+# ---- Editor / tooling -------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---- Backup files -----------------------------------------------------------
+*.orig
+*.bak
+*.tmp
+
+# ---- Claude / agent caches (project-local) ---------------------------------
+# Keep the .claude folder structure (configs, hooks) but ignore session cruft.
+.claude/sessions/
+.claude/cache/
+.claude/.tmp/
+skills-lock.json
