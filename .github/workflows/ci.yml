@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode_26.3.app
@@ -27,10 +27,10 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Install xcbeautify
-        run: brew install xcbeautify
+      - name: Ensure xcbeautify
+        run: which xcbeautify || brew install xcbeautify
 
-      - name: Build & test core module
+      - name: Build and test core module
         run: |
           set -o pipefail
           xcodebuild test \
@@ -41,10 +41,16 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcbeautify
 
+      # The .xcresult is a macOS bundle (a directory). Packing it with ditto
+      # preserves the bundle so it can be downloaded, unzipped, and opened in
+      - name: Pack test results
+        if: always()
+        run: ditto -c -k --keepParent --sequesterRsrc TestResults.xcresult TestResults.xcresult.zip
+
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: test-results
-          path: TestResults.xcresult
+          name: TestResults
+          path: TestResults.xcresult.zip
           retention-days: 7
