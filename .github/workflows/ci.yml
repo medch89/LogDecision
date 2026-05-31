@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: Core module (DecisionLog)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -switch /Applications/Xcode_26.3.app
+
+      - name: Show versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Ensure xcbeautify
+        run: which xcbeautify || brew install xcbeautify
+
+      - name: Build and test core module
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project DecisionLog/DecisionLog.xcodeproj \
+            -scheme DecisionLog \
+            -destination 'platform=macOS' \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify
+
+      # The .xcresult is a macOS bundle (a directory). Packing it with ditto
+      # preserves the bundle so it can be downloaded, unzipped, and opened in
+      - name: Pack test results
+        if: always()
+        run: ditto -c -k --keepParent --sequesterRsrc TestResults.xcresult TestResults.xcresult.zip
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: TestResults
+          path: TestResults.xcresult.zip
+          retention-days: 7
