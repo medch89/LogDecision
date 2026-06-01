@@ -8,7 +8,7 @@ A reference for building new features or projects following the same architectur
 
 Every feature lives in two targets:
 
-```
+```text
 CoreFramework/<Feature>/
 ├── Domain/          ← models, protocols, action enums
 ├── API/             ← remote loaders, mappers
@@ -112,6 +112,7 @@ public final class RemoteFeatureNameLoader: FeatureNameLoader {
     public enum Error: Swift.Error {
         case connectivity
         case invalidData
+        case invalidURL
     }
 
     private let baseURL: URL
@@ -123,14 +124,18 @@ public final class RemoteFeatureNameLoader: FeatureNameLoader {
     }
 
     public func load() async throws -> FeatureName {
-        let (data, response) = try await client.data(for: makeRequest())
+        let request = try makeRequest()
+        let (data, response) = try await client.data(for: request)
         return try FeatureNameMapper.map(data, from: response)
     }
 
-    private func makeRequest() -> URLRequest {
-        var components = URLComponents(string: baseURL.absoluteString)!
+    private func makeRequest() throws -> URLRequest {
+        guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+            throw Error.invalidURL
+        }
         components.path = "/api/feature-name"
-        var request = URLRequest(url: components.url!)
+        guard let url = components.url else { throw Error.invalidURL }
+        var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         return request
     }
@@ -560,7 +565,7 @@ private func loadAll() {
 
 ## 11. Checklist for a New Feature
 
-```
+```text
 Domain
  [ ] FeatureName.swift              — Equatable, Sendable value type
  [ ] FeatureNameLoader.swift        — async throws protocol
