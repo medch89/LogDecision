@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+            persist-credentials: false
 
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode_26.3.app
@@ -45,10 +47,15 @@ jobs:
       # preserves the bundle so it can be downloaded, unzipped, and opened in
       - name: Pack test results
         if: always()
-        run: ditto -c -k --keepParent --sequesterRsrc TestResults.xcresult TestResults.xcresult.zip
+        run: |
+          if [ -e TestResults.xcresult ]; then
+            ditto -c -k --keepParent --sequesterRsrc TestResults.xcresult TestResults.xcresult.zip
+          else
+            echo "TestResults.xcresult not found — skipping pack"
+          fi
 
       - name: Upload test results
-        if: always()
+        if: always() && hashFiles('TestResults.xcresult.zip') != ''
         uses: actions/upload-artifact@v5
         with:
           name: TestResults
