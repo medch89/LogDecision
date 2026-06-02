@@ -24,7 +24,7 @@ public actor LocalDecisionListLoader: DecisionListLoader {
         var descriptor = makeDescriptor(filter: filter, search: search)
         descriptor.relationshipKeyPathsForPrefetching = [\.outcome]
         let entities = try context.fetch(descriptor)
-        return entities.map(DecisionEntityMapper.toDomain)
+        return try entities.map(DecisionEntityMapper.toDomain)
     }
 
     public func loadOverdueCount(now: Date) async throws -> Int {

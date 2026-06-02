@@ -8,7 +8,7 @@ public struct Decision: Equatable, Sendable, Identifiable {
     public let optionsConsidered: [String]
     public let chosenOption: String
     public let predictedOutcome: String
-    public let confidenceScore: Int  // 1...10
+    public let confidenceScore: Score
     public let category: DecisionCategory
     public let tags: [String]
     public let stakes: DecisionStakes
@@ -25,7 +25,7 @@ public struct Decision: Equatable, Sendable, Identifiable {
         optionsConsidered: [String],
         chosenOption: String,
         predictedOutcome: String,
-        confidenceScore: Int,
+        confidenceScore: Score,
         category: DecisionCategory,
         tags: [String],
         stakes: DecisionStakes,

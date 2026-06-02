@@ -32,7 +32,7 @@ struct LocalDecisionListLoaderTests {
         let sut = LocalDecisionListLoader(container: container)
 
         let result = try await sut.load(filter: .done, search: nil)
-        #expect(result.first?.outcome?.accuracyRating == 8)
+        #expect(result.first?.outcome?.accuracyRating == (try Score(8)))
     }
 
     @Test("filter .category narrows to matching category only")

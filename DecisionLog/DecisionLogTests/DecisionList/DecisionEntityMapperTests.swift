@@ -6,7 +6,7 @@ import Foundation
 struct DecisionEntityMapperTests {
 
     @Test("round-trip: domain → entity → domain preserves every field")
-    func roundTrip() {
+    func roundTrip() throws {
         let original = Decision(
             id: UUID(),
             title: "Hire the junior dev",
@@ -14,7 +14,7 @@ struct DecisionEntityMapperTests {
             optionsConsidered: ["Hire senior", "Promote internally", "Defer"],
             chosenOption: "Hire the junior dev",
             predictedOutcome: "Faster shipping by end of Q4",
-            confidenceScore: 7,
+            confidenceScore: try Score(7),
             category: .career,
             tags: ["hiring", "team"],
             stakes: .high,
@@ -22,7 +22,7 @@ struct DecisionEntityMapperTests {
             checkInDate: Date(timeIntervalSince1970: 1_700_000_000),
             outcome: DecisionOutcome(
                 actualOutcome: "Shipped one week late",
-                accuracyRating: 6, satisfactionRating: 7,
+                accuracyRating: try Score(6), satisfactionRating: try Score(7),
                 learnings: "Onboarding took longer than planned",
                 checkedInAt: Date(timeIntervalSince1970: 1_705_000_000)
             ),
@@ -30,14 +30,14 @@ struct DecisionEntityMapperTests {
             voiceNoteURL: URL(string: "file:///tmp/note.m4a")
         )
 
-        let roundTripped = DecisionEntityMapper.toDomain(
+        let roundTripped = try DecisionEntityMapper.toDomain(
             DecisionEntityMapper.toEntity(original)
         )
         #expect(roundTripped == original)
     }
 
     @Test("unknown category raw value falls back to .other (forward compatibility)")
-    func unknownCategoryFallsBack() {
+    func unknownCategoryFallsBack() throws {
         let entity = DecisionEntity(
             id: UUID(), title: "x", context: nil,
             optionsConsidered: [], chosenOption: "", predictedOutcome: "",
@@ -47,12 +47,12 @@ struct DecisionEntityMapperTests {
             madeAt: Date(), checkInDate: Date(),
             outcome: nil, aiReflection: nil, voiceNoteURL: nil
         )
-        let mapped = DecisionEntityMapper.toDomain(entity)
+        let mapped = try DecisionEntityMapper.toDomain(entity)
         #expect(mapped.category == .other)
     }
 
-    @Test("Unknow decision stakes raw value should fall back to .low option")
-    func unknownStakesFallsBackToLow() {
+    @Test("Unknown decision stakes raw value should fall back to .low option")
+    func unknownStakesFallsBackToLow() throws {
         let entity = DecisionEntity(
             id: UUID(),
             title: "x",
@@ -70,7 +70,7 @@ struct DecisionEntityMapperTests {
             aiReflection: nil,
             voiceNoteURL: nil
         )
-        let mapped = DecisionEntityMapper.toDomain(entity)
+        let mapped = try DecisionEntityMapper.toDomain(entity)
         #expect(mapped.stakes == .low)
     }
 }
