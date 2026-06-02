@@ -69,7 +69,7 @@ public actor LocalDecisionListLoader: DecisionListLoader {
                 ? #Predicate { e in
                     e.outcome == nil
                     && (e.title.localizedStandardContains(needle)
-                        || (e.context ?? "").localizedStandardContains(needle))
+                        || (e.context.flatMap { $0.localizedStandardContains(needle) } ?? false))
                   }
                 : #Predicate { e in e.outcome == nil }
 
@@ -78,7 +78,7 @@ public actor LocalDecisionListLoader: DecisionListLoader {
                 ? #Predicate { e in
                     e.outcome != nil
                     && (e.title.localizedStandardContains(needle)
-                        || (e.context ?? "").localizedStandardContains(needle))
+                        || (e.context.flatMap { $0.localizedStandardContains(needle) } ?? false))
                   }
                 : #Predicate { e in e.outcome != nil }
 
@@ -88,7 +88,7 @@ public actor LocalDecisionListLoader: DecisionListLoader {
                 ? #Predicate { e in
                     e.categoryRaw == raw
                     && (e.title.localizedStandardContains(needle)
-                        || (e.context ?? "").localizedStandardContains(needle))
+                        || (e.context.flatMap { $0.localizedStandardContains(needle) } ?? false))
                   }
                 : #Predicate { e in e.categoryRaw == raw }
         }
