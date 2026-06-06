@@ -1,22 +1,31 @@
 import Foundation
 import SwiftData
 
-/// SwiftData-backed implementation of `DecisionListLoader`.
-///
-/// Uses an `actor` because `ModelContext` is not `Sendable`; isolating all
-/// access through a single actor keeps the loader safe to call from any thread
-/// while remaining `Sendable` itself.
-///
-/// Performance: uses `FetchDescriptor.fetchLimit`/`fetchOffset` semantics
-/// indirectly — we read the full filtered set and sort/search/filter via the
-/// predicate. For S-04 the dataset is per-user (hundreds, not millions); the
-/// `batchSize: 20` mentioned in the spec is reserved for a future `loadMore`
-/// iteration once the dataset grows.
-public actor LocalDecisionListLoader: DecisionListLoader {
+/// `actor` because `ModelContext` is not `Sendable`; routing all access through
+/// one actor keeps the loader callable from any thread while staying `Sendable`.
+public actor LocalDecisionListLoader: DecisionListLoader, DecisionDeleter {
     private let container: ModelContainer
 
     public init(container: ModelContainer) {
         self.container = container
+    }
+
+    // MARK: - DecisionDeleter
+
+    public func delete(id: UUID) async throws {
+        let context = ModelContext(container)
+        let descriptor = FetchDescriptor<DecisionEntity>(
+            predicate: #Predicate { $0.id == id }
+        )
+        guard let entity = try context.fetch(descriptor).first else { return }
+        context.delete(entity)
+        try context.save()
+    }
+
+    public func reinsert(_ decision: Decision) async throws {
+        let context = ModelContext(container)
+        context.insert(DecisionEntityMapper.toEntity(decision))
+        try context.save()
     }
 
     public func load(filter: DecisionListFilter, search: String?) async throws -> [Decision] {
