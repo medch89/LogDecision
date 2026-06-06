@@ -10,14 +10,7 @@ import SwiftData
 /// `#Predicate` filtering by category (predicates need primitive comparisons).
 @Model
 public final class DecisionEntity {
-    #Unique<DecisionEntity>([\.id])
-    #Index<DecisionEntity>(
-        [\.categoryRaw],
-        [\.checkInDate],
-        [\.checkInDate, \.outcome]   // compound — matches loadOverdueCount predicate
-    )
-
-    public var id: UUID
+    @Attribute(.unique) public var id: UUID
     public var title: String
     public var context: String?
     public var optionsConsidered: [String]
