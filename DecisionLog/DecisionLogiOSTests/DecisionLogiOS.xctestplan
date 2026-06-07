@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "FD1855C6-2F29-484D-97D3-114C2C118EDA",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:DecisionLog.xcodeproj",
+        "identifier" : "D92F2B6E2FD061EA00D653DD",
+        "name" : "DecisionLogiOSTests"
+      }
+    }
+  ],
+  "version" : 1
+}

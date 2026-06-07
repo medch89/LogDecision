@@ -1,0 +1,35 @@
+{
+  "configurations" : [
+    {
+      "id" : "ECEA8E25-68DF-49F6-AC9F-748A67549395",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "distributor" : "com.apple.TestFlight",
+    "mainThreadCheckerDetectionPolicy" : {
+      "severity" : "failure"
+    },
+    "performanceAntipatternCheckerEnabled" : true,
+    "testExecutionOrdering" : "random",
+    "threadPerformanceCheckerRuntimeIssueDetection" : {
+      "severity" : "failure"
+    },
+    "threadSanitizerEnabled" : true,
+    "undefinedBehaviorSanitizerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:DecisionLog.xcodeproj",
+        "identifier" : "D93C82082FB8E98F00C81F0F",
+        "name" : "DecisionLogTests"
+      }
+    }
+  ],
+  "version" : 1
+}

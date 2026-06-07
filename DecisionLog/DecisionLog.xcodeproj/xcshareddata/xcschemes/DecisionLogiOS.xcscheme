@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D93C81FD2FB8E98F00C81F0F"
-               BuildableName = "DecisionLog.framework"
-               BlueprintName = "DecisionLog"
+               BlueprintIdentifier = "D92F2B642FD061EA00D653DD"
+               BuildableName = "DecisionLogiOS.framework"
+               BlueprintName = "DecisionLogiOS"
                ReferencedContainer = "container:DecisionLog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -30,7 +30,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:DecisionLogTests/DecisionLog.xctestplan"
+            reference = "container:DecisionLogiOSTests/DecisionLogiOS.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
@@ -40,9 +40,9 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D93C82082FB8E98F00C81F0F"
-               BuildableName = "DecisionLogTests.xctest"
-               BlueprintName = "DecisionLogTests"
+               BlueprintIdentifier = "D92F2B6E2FD061EA00D653DD"
+               BuildableName = "DecisionLogiOSTests.xctest"
+               BlueprintName = "DecisionLogiOSTests"
                ReferencedContainer = "container:DecisionLog.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -68,9 +68,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D93C81FD2FB8E98F00C81F0F"
-            BuildableName = "DecisionLog.framework"
-            BlueprintName = "DecisionLog"
+            BlueprintIdentifier = "D92F2B642FD061EA00D653DD"
+            BuildableName = "DecisionLogiOS.framework"
+            BlueprintName = "DecisionLogiOS"
             ReferencedContainer = "container:DecisionLog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
