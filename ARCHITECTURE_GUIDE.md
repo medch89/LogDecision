@@ -320,6 +320,7 @@ public final class FeatureNameViewModel {
 - Guard idempotent lifecycle calls with an `appeared: Bool` flag.
 - Localize all user-facing strings via `String.localise(key:)`.
 - Route all events (analytics, navigation) through `actionHandler`.
+- **`Observer<T>` payloads are Domain models, primitives, or `Void` only** — never a bespoke "view-state" struct carrying localized copy or UI tokens. The ViewModel emits domain facts; the Composer turns them into views. If a state needs localized text, the Composer builds a small child View backed by its own presentation ViewModel that owns that copy (e.g. an empty/no-results ViewModel) — it does not arrive pre-formatted through the callback.
 
 ### Pagination
 
@@ -362,9 +363,17 @@ final class FeatureNameStore<Content: View> {
 
 The Composer writes to the Store. The View only reads. No `@Published` needed — `@Observable` tracks all `var` properties automatically.
 
+**Store vs. ViewModel — what goes where:**
+- The **Store holds only dynamic, composed sub-Views** — child views the Composer swaps in/out in response to ViewModel callbacks (loading view, error view, content slots, banner, toast). These are the things that change at runtime and must trigger a re-render.
+- **Static presentation data** (titles, labels, formatted dates, badge text/colour tokens, accessibility strings) is read **directly from the ViewModel** (the presentation layer), not mirrored into the Store. It's decided once at composition and doesn't change for the lifetime of the view.
+
+In short: Store = dynamic view slots; ViewModel = static display values. Don't duplicate the ViewModel's static fields into the Store.
+
 ### View
 
-`struct`, pure layout. Holds Store and ViewModel as plain `let` properties — no `@ObservedObject`, no property wrappers. Contains **no presentation logic** — no `if viewModel.isLoading`, no conditional rendering based on state. The only conditional rendering allowed is reading ready-made View slots from the Store (which the Composer already decided to populate or leave nil).
+`struct`, pure layout. Holds Store and ViewModel as plain `let` properties — no `@ObservedObject`, no property wrappers. Contains **no presentation logic** — no `if viewModel.isLoading`, no conditional rendering based on state. The only conditional rendering allowed is reading ready-made View slots from the Store (which the ViewModel already decided to populate or leave nil, via the Composer's wiring).
+
+Pure *rendering* of a value the ViewModel already decided is fine — e.g. painting pre-computed highlight ranges onto text, or applying a colour token. The line is: the View may **render** a decided value, but must never **make** the decision (what to show, which state, how to format copy).
 
 ```swift
 public struct FeatureNameView<Content: View>: View {
@@ -391,8 +400,17 @@ public struct FeatureNameView<Content: View>: View {
 
 **Why this pattern works:**
 - The View is a dumb renderer — it never decides *what* to show.
-- The Composer wires `viewModel.onLoaded = { store.content = contentView }` etc.
-- Presentation logic (loading → content → error) lives entirely in the Composer, making it testable without a UI.
+- The ViewModel decides (loading → content → error) and emits `Observer<T>` callbacks; the Composer wires each callback to a Store mutation (`viewModel.onLoaded = { store.content = contentView }`).
+- Presentation logic lives in the ViewModel, making it testable without a UI. The Composer holds no logic — only wiring.
+
+**No `@State` in the View.** UI state — text-field input, selected tab/filter, toggle values — lives in the Store, not the View. The View binds to it (`@Bindable` Store, `$store.searchText`) and forwards changes to the ViewModel:
+
+```swift
+.searchable(text: $store.searchText)
+.onChange(of: store.searchText) { _, new in viewModel.search(new) }
+```
+
+The *decision* driven by that state is the ViewModel's. The View never computes "is this the selected filter?" itself — the ViewModel decides the selection and the Composer reflects it into the Store; the View only reads `store.selectedFilter`. If you reach for `@State`, the state is in the wrong layer.
 
 ### Colors and Fonts
 
@@ -424,7 +442,7 @@ Text(item.title)
 
 ## 6. Composition Root
 
-Composers are `enum` (never `class` or `struct`) with only `static` factory methods. This is the **single place** where all presentation logic lives — it decides what the View shows for each state transition.
+Composers are `enum` (never `class` or `struct`) with only `static` factory methods. A Composer **only wires**: it builds the object graph, injects dependencies, and connects each ViewModel `Observer<T>` callback to a Store mutation. It contains **no presentation logic** — no decisions, no formatting, no branching. *What* to show for each state is decided by the ViewModel (which emits the callbacks); the Composer just assigns the result to the Store.
 
 ```swift
 public enum FeatureNameUIComposer {
@@ -439,7 +457,7 @@ public enum FeatureNameUIComposer {
             actionHandler: actionHandler
         )
 
-        // Wire ViewModel callbacks → Store mutations. This IS the presentation logic.
+        // Wire ViewModel callbacks → Store mutations
         viewModel.onLoadingStarted = { [weak store] in
             store?.loadingView = FeatureNameLoadingView()
             store?.retryView   = nil
@@ -463,7 +481,7 @@ public enum FeatureNameUIComposer {
 **Rules:**
 - `@MainActor` on ViewModels eliminates the need for `MainQueueDispatchDecorator` — do not add it.
 - Wire ViewModel `Observer<T>` callbacks → Store mutations **only** inside the Composer.
-- The Composer decides what child view to assign for each state (loading, success, failure). The View just renders Store slots.
+- The ViewModel decides which state is active (loading, success, failure) and signals it via a callback; the Composer just assigns the corresponding child view to the Store slot. No decision-making in the Composer.
 - Pass child-view factory closures as parameters when composing nested features.
 
 ---
@@ -548,7 +566,8 @@ private func loadAll() {
 - **No Combine or RxSwift** — use `async/await` and `Observer<T>` callbacks.
 - **No `ObservableObject` or `@Published` in ViewModels** — ViewModels communicate via `Observer<T>` callbacks.
 - **No `@ObservedObject` in Views** — Views hold ViewModel as plain `let`; `@Observable` Stores are tracked automatically.
-- **No presentation logic in Views** — no `if viewModel.isLoading`, no conditional rendering based on state; all such logic belongs in the Composer.
+- **No presentation logic in Views** — no `if viewModel.isLoading`, no conditional rendering based on state; such logic belongs in the ViewModel.
+- **No presentation logic in Composers** — Composers only wire callbacks to Store mutations and inject dependencies; all decisions/formatting belong in the ViewModel.
 - **No `DispatchQueue.main` calls** — mark ViewModels `@MainActor` instead.
 - **No `MainQueueDispatchDecorator`** — `@MainActor` on ViewModel makes it unnecessary.
 - **No completion callbacks on loader protocols** — all async is `async throws`.
@@ -560,6 +579,28 @@ private func loadAll() {
 - **No URL construction via string interpolation** — always use `URLComponents`.
 - **No data models stored in a Store** — Stores hold composed Views only.
 - **No force-unwrapping** — use `guard let` or `try?` with explicit error handling.
+
+---
+
+## Comment Style
+
+Comment sparingly. Code should read on its own; comments are for what code can't say.
+
+- **Add a comment only when** the *why* is non-obvious (a workaround, a spec rule, a deliberate trade-off, an OS-version constraint).
+- **Don't** restate what the code already says, narrate obvious mechanics, or document every property/parameter.
+- **Keep them short** — one line where possible. A type usually needs at most a one-line summary, not a paragraph.
+- **No section-banner or step-by-step comments** inside a function body.
+- Prefer a precise name over a comment.
+
+---
+
+## File Organization
+
+One component per file. Each `struct`, `class`, `enum`, `actor`, or `protocol` lives in its own file named after it (`OverdueBannerView.swift`, `FilterChip.swift`).
+
+- **Never group several Views/types into one "…Views" / "…Models" file.** Split them.
+- **Exception — a type's own extension may stay with it.** If an `extension` exists solely to derive or produce that type (e.g. `Decision.status()` lives with `DecisionStatus`, `DecisionOutcome.quality` with `OutcomeQuality`), keep them in the same file — they are one unit.
+- **Test doubles** may stay in the test file that uses them.
 
 ---
 
