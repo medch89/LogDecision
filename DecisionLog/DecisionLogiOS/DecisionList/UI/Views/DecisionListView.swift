@@ -39,10 +39,11 @@ public struct DecisionListView: View {
             .navigationTitle(String.localise(key: "decisionList.title"))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: viewModel.addDecision) {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel(String.localise(key: "decisionList.fab.accessibility"))
+                    Button(
+                        String.localise(key: "decisionList.fab.accessibility"),
+                        systemImage: "plus",
+                        action: viewModel.addDecision
+                    )
                 }
             }
             .searchable(text: $store.searchText, prompt: Text(String.localise(key: "decisionList.search.prompt")))
