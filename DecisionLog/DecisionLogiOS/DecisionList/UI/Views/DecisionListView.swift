@@ -22,7 +22,7 @@ public struct DecisionListView: View {
                 }
 
                 Section {
-                    filterBar
+                    store.filterBar
                         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                         .listRowSeparator(.hidden)
                 }
@@ -59,36 +59,6 @@ public struct DecisionListView: View {
                 .frame(maxWidth: .infinity)
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
-        }
-    }
-
-    private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(FilterChip.allCases, id: \.self) { chip in
-                    let isSelected = chip.filter == store.selectedFilter
-                    Button {
-                        viewModel.selectFilter(chip.filter)
-                    } label: {
-                        Text(chip.title)
-                            .font(DecisionListFont.filterChip)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 7)
-                            .background(
-                                Capsule().fill(
-                                    isSelected
-                                        ? DecisionListColor.badge(.purple).opacity(0.18)
-                                        : Color(.secondarySystemBackground)
-                                )
-                            )
-                            .foregroundStyle(
-                                isSelected ? DecisionListColor.badge(.purple) : DecisionListColor.primaryText
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                }
-            }
         }
     }
 }

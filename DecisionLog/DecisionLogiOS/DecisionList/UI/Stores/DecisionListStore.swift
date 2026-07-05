@@ -14,8 +14,8 @@ final class DecisionListStore {
     var error: DecisionListErrorView?
     var undoToast: UndoToastView?
 
+    var filterBar: FilterBarView?
     var searchText: String = ""
-    var selectedFilter: DecisionListFilter = .all
 
     struct RowItem: Identifiable {
         let id: UUID

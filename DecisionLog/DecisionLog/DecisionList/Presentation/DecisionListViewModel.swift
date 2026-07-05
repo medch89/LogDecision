@@ -19,8 +19,6 @@ public final class DecisionListViewModel {
     public var onNoResults: Observer<NoResultsContext>?
     public var onLoadingFailed: Observer<Void>?
     public var onShowUndoToast: Observer<Void>?
-    /// Active filter, emitted whenever it changes so the UI can reflect selection.
-    public var onFilterChanged: Observer<DecisionListFilter>?
 
     public struct NoResultsContext {
         public let filter: DecisionListFilter
@@ -83,7 +81,6 @@ public final class DecisionListViewModel {
     public func selectFilter(_ filter: DecisionListFilter) {
         guard filter != self.filter else { return }
         self.filter = filter
-        onFilterChanged?(filter)
         load()
     }
 

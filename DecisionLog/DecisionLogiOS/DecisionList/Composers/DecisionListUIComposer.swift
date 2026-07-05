@@ -26,9 +26,9 @@ public enum DecisionListUIComposer {
             clearStates(store)
         }
 
-        viewModel.onFilterChanged = { [weak store] filter in
-            store?.selectedFilter = filter
-        }
+        store.filterBar = FilterBarUIComposer.compose(onSelect: { [weak viewModel] filter in
+            viewModel?.selectFilter(filter)
+        })
 
         viewModel.onLoaded = { [weak store, weak viewModel] loaded in
             guard let store, let viewModel else { return }
