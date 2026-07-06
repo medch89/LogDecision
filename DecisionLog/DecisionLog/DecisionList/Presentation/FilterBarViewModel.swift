@@ -5,15 +5,16 @@ public final class FilterBarViewModel {
     public typealias ChipData = (
         id: String,
         title: String,
-        isSelected: Bool,
         filter: DecisionListFilter
     )
-    public var onChipsChanged: Observer<[ChipData]>?
+    public var onChipsReset: Observer<Void>?
+    public var onUnselectedChipLoaded: Observer<ChipData>?
+    public var onSelectedChipLoaded: Observer<ChipData>?
 
     private var appeared = false
     private var selected: DecisionListFilter = .all
     private let onSelect: (DecisionListFilter) -> Void
-    private let options: [(id: String, title: String, filter: DecisionListFilter)] = [
+    private let options: [ChipData] = [
         (id: "all", title: .localise(key: "decisionList.filter.all"), filter: .all),
         (id: "pending", title: .localise(key: "decisionList.filter.pending"), filter: .pending),
         (id: "done", title: .localise(key: "decisionList.filter.done"), filter: .done),
@@ -29,19 +30,20 @@ public final class FilterBarViewModel {
     public func onAppear() {
         guard !appeared else { return }
         appeared = true
-        onChipsChanged?(chips())
+        renderChips()
     }
 
     public func select(_ filter: DecisionListFilter) {
         guard filter != selected else { return }
         selected = filter
-        onChipsChanged?(chips())
+        onChipsReset?(())
+        renderChips()
         onSelect(filter)
     }
 
-    private func chips() -> [ChipData] {
-        options.map { option in
-            (id: option.id, title: option.title, isSelected: option.filter == selected, filter: option.filter)
+    private func renderChips() {
+        for chip in options {
+            chip.filter == selected ? onSelectedChipLoaded?(chip) : onUnselectedChipLoaded?(chip)
         }
     }
 }
